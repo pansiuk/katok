@@ -1,1 +1,41 @@
+name: update-schedule
 
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '10 5 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        working-directory: parser
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: Parse schedule
+        working-directory: parser
+        run: node parse.js
+
+      - name: Commit schedule.json
+        run: |
+          git config user.name "schedule-bot"
+          git config user.email "actions@github.com"
+          if ! git diff --quiet app/schedule.json; then
+            git add app/schedule.json
+            git commit -m "schedule auto-update $(date -u +%Y-%m-%d)"
+            git push
+          else
+            echo "No changes"
+          fi
