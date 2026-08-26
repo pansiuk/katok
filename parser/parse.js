@@ -156,9 +156,9 @@ async function withBrowser(fn) {
 async function parseKarolinsky() {
   return await withBrowser(async page => {
     const sessions = [];
-    for (const url of ['https://ledlife.by/massovye_kataniya/', 'https://ledlife.by/raspisanie/']) {
+    let resp = null; for (const url of ['https://ledlife.by/massovye_kataniya/', 'https://ledlife.by/raspisanie/']) {
       try {
-        const resp = await page.goto(url, { waitUntil: 'networkidle', timeout: 45000 });
+        resp = await page.goto(url, { waitUntil: 'networkidle', timeout: 45000 });
       } catch (e) { continue; }
       const text = await page.evaluate(() => document.body.innerText); console.log('KAR', url, resp ? resp.status() : 'no-resp'); console.log('KAR-DUMP', JSON.stringify(text.slice(0, 2500)));
       // Ищем блоки вида "26 августа" / "26.08" со временем "17:00", "19:30-20:30" рядом
