@@ -43,7 +43,12 @@ async function fetchText(url) {
     headers: { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) nakatok-schedule-bot' }
   });
   if (!r.ok) throw new Error(`HTTP ${r.status} for ${url}`);
-  return await r.text();
+  const raw = await r.text();
+  // нормализуем HTML-сущности, которые ломают разбор дат («24&nbsp;августа»)
+  return raw
+    .replace(/&nbsp;|&#160;|&#xa0;/gi, ' ')
+    .replace(/&mdash;|&ndash;|&#8212;|&#8211;/gi, '-')
+    .replace(/&amp;/gi, '&');
 }
 
 /* ---------- Чижовка-Арена: статический HTML с таблицами по неделям ---------- */
@@ -244,6 +249,7 @@ async function parseMinskArena() {
 (async () => {
   const all = [];
   const errors = [];
+  const counts = {};
   const jobs = [
     ['chizhovka', parseChizhovka],
     ['pritytskogo', parsePritytskogo],
@@ -253,20 +259,46 @@ async function parseMinskArena() {
   for (const [name, fn] of jobs) {
     try {
       const s = await fn();
+      counts[name] = s.length;
       console.log(`${name}: ${s.length} сеансов`);
       all.push(...s);
     } catch (e) {
+      counts[name] = 0;
       console.error(`${name}: ошибка — ${e.message}`);
       errors.push(name);
     }
   }
 
+  // Защита от пропажи данных: если арена сегодня дала 0 сеансов,
+  // сохраняем её будущие сеансы из предыдущего выпуска schedule.json.
+  try {
+    const prev = JSON.parse(fs.readFileSync(OUT, 'utf8'));
+    if (prev && Array.isArray(prev.sessions)) {
+      for (const [name] of jobs) {
+        if (!counts[name]) {
+          const kept = prev.sessions.filter(s => s.a === name);
+          if (kept.length) {
+            console.log(`${name}: 0 новых — оставляем ${kept.length} сеансов из прошлого выпуска`);
+            all.push(...kept);
+          }
+        }
+      }
+    }
+  } catch (e) { /* прошлого файла нет — пропускаем */ }
+
   // Оставляем только даты от вчера и на 14 дней вперёд
   const now = new Date(); now.setDate(now.getDate() - 1);
   const min = now.toISOString().slice(0, 10);
   const max = new Date(Date.now() + 14 * 86400e3).toISOString().slice(0, 10);
-  const filtered = all.filter(s => s.d >= min && s.d <= max)
-    .sort((a, b) => (a.d + a.t).localeCompare(b.d + b.t));
+  // дедупликация (новые + сохранённые старые могут пересекаться)
+  const seen = new Set();
+  const filtered = all.filter(s => {
+    if (s.d < min || s.d > max) return false;
+    const k = `${s.a}|${s.d}|${s.t}|${s.type}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  }).sort((a, b) => (a.d + a.t).localeCompare(b.d + b.t));
 
   if (!filtered.length) {
     console.error('Ни одного сеанса не собрано — schedule.json не перезаписываем.');
