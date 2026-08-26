@@ -158,9 +158,9 @@ async function parseKarolinsky() {
     const sessions = [];
     for (const url of ['https://ledlife.by/massovye_kataniya/', 'https://ledlife.by/raspisanie/']) {
       try {
-        await page.goto(url, { waitUntil: 'networkidle', timeout: 45000 });
+        const resp = await page.goto(url, { waitUntil: 'networkidle', timeout: 45000 });
       } catch (e) { continue; }
-      const text = await page.evaluate(() => document.body.innerText);
+      const text = await page.evaluate(() => document.body.innerText); console.log('KAR', url, resp ? resp.status() : 'no-resp'); console.log('KAR-DUMP', JSON.stringify(text.slice(0, 2500)));
       // Ищем блоки вида "26 августа" / "26.08" со временем "17:00", "19:30-20:30" рядом
       const lines = text.split('\n').map(s => s.trim()).filter(Boolean);
       let curDate = null;
