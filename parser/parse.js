@@ -143,7 +143,7 @@ async function parsePritytskogo() {
 /* ---------- JS-сайты (ledlife.by, minskarena.by): через Playwright ---------- */
 async function withBrowser(fn) {
   const { chromium } = require('playwright');
-  const browser = await chromium.launch();
+  const u = process.env.BY_PROXY_URL; let proxy; if (u) { try { const p = new URL(u); proxy = { server: p.protocol + '//' + p.host }; if (p.username) proxy.username = decodeURIComponent(p.username); if (p.password) proxy.password = decodeURIComponent(p.password); } catch (e) { proxy = { server: u }; } console.log('Playwright: proxy ' + proxy.server); } const browser = await chromium.launch({ proxy });
   try {
     const page = await browser.newPage({ locale: 'ru-RU' });
     return await fn(page);
