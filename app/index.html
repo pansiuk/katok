@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Каток Минск — расписание катаний</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Расписание массовых катаний на ледовых аренах Минска: Чижовка-Арена, Ледовый дворец на Притыцкого, Минск-Арена, СДЮШОР в Малиновке.">
+<meta name="theme-color" content="#1273e6">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eef4fb; --card:#ffffff; --ink:#12263f; --ink2:#5b7391;
+    --accent:#1273e6; --accent2:#0a5ecb; --accent-soft:#e3efff;
+    --line:#dde8f4; --chip:#ffffff; --chip-on:#1273e6;
+    --ok:#0f9d6c; --past:#9db2c9; --disco:#8b3fd1; --disco-soft:#f3e9fd;
+    --ohm:#d16a1f; --ohm-soft:#fdf0e3; --mass:#1273e6; --mass-soft:#e3efff;
+    --shadow:0 6px 24px rgba(18,38,63,.08);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Rubik',-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+    min-height:100vh;
+  }
+  .app{max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column;
+    background:var(--bg); position:relative; padding-bottom:84px;}
+  header{
+    padding:calc(14px + env(safe-area-inset-top)) 18px 12px;
+    background:linear-gradient(150deg,#0e4fa8 0%,#1273e6 55%,#3aa0ff 100%);
+    color:#fff; border-radius:0 0 22px 22px; box-shadow:var(--shadow);
+  }
+  .brand{display:flex; align-items:center; gap:10px}
+  .brand .logo{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.16);
+    display:flex;align-items:center;justify-content:center;font-size:21px}
+  .brand h1{font-size:21px;margin:0;font-weight:800;letter-spacing:.3px}
+  .brand p{margin:1px 0 0;font-size:11.5px;opacity:.85}
+  .days{display:flex;gap:8px;overflow-x:auto;padding:14px 2px 4px;scrollbar-width:none}
+  .days::-webkit-scrollbar{display:none}
+  .day{flex:0 0 auto;min-width:52px;padding:8px 6px;border-radius:14px;text-align:center;
+    background:rgba(255,255,255,.13);color:#fff;border:1.5px solid transparent;cursor:pointer;user-select:none}
+  .day .dw{font-size:11px;opacity:.8}
+  .day .dn{font-size:17px;font-weight:700;margin-top:1px}
+  .day.today .dw::after{content:'•';margin-left:3px;color:#ffe27a}
+  .day.on{background:#fff;color:var(--accent2);border-color:#fff}
+  .day .dots{display:flex;gap:3px;justify-content:center;margin-top:4px;height:6px}
+  .day .dots i{width:6px;height:6px;border-radius:50%;display:block}
+  .filters{display:flex;gap:8px;overflow-x:auto;padding:12px 18px 4px;scrollbar-width:none}
+  .filters::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;padding:7px 13px;border-radius:20px;background:var(--chip);
+    border:1.5px solid var(--line);font-size:13px;font-weight:500;color:var(--ink2);cursor:pointer;user-select:none;
+    display:inline-flex;align-items:center;gap:6px}
+  .chip.on{background:var(--chip-on);border-color:var(--chip-on);color:#fff}
+  .chip .cdot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+  .fgroup-label{flex:0 0 auto;align-self:center;font-size:11px;color:var(--ink2);text-transform:uppercase;letter-spacing:.6px;margin-right:2px}
+  main{flex:1;padding:8px 18px 20px}
+  .datehead{font-size:14px;font-weight:600;color:var(--ink2);margin:14px 2px 10px}
+  .card{
+    background:var(--card);border-radius:18px;box-shadow:var(--shadow);
+    padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;
+    border:1.5px solid transparent;border-left:5px solid transparent;transition:transform .06s ease;
+  }
+  .card:active{transform:scale(.985)}
+  .card.past{opacity:.55}
+  .t{min-width:64px}
+  .t .hh{font-size:21px;font-weight:800;letter-spacing:.2px}
+  .t .dur{font-size:11.5px;color:var(--ink2);margin-top:1px}
+  .info{flex:1;min-width:0}
+  .info .arena{font-size:15px;font-weight:600;line-height:1.25}
+  .info .sub{font-size:12.5px;color:var(--ink2);margin-top:2px}
+  .badge{font-size:11px;font-weight:600;padding:4px 9px;border-radius:9px;white-space:nowrap}
+  .badge.mass{background:var(--mass-soft);color:var(--mass)}
+  .badge.disco{background:var(--disco-soft);color:var(--disco)}
+  .badge.ohm{background:var(--ohm-soft);color:var(--ohm)}
+  .badge.done{background:#edf1f7;color:var(--past)}
+  .empty{text-align:center;padding:44px 24px;color:var(--ink2);font-size:14.5px;line-height:1.55}
+  .empty .ico{font-size:40px;margin-bottom:10px}
+  .note{margin:18px 2px 0;padding:12px 14px;border-radius:14px;background:#fff8e6;border:1.5px solid #f3e3ae;
+    color:#7a611d;font-size:12.5px;line-height:1.5}
+  .updated{margin:14px 2px 0;font-size:11.5px;color:var(--ink2);text-align:center}
+  .offline{margin:10px 18px 0;padding:9px 13px;border-radius:12px;background:#fdecec;border:1.5px solid #f3c2c2;
+    color:#a33;font-size:12px;display:none}
+  .acard{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:16px;margin-bottom:12px}
+  .acard h3{margin:0 0 4px;font-size:16.5px}
+  .acard .addr{font-size:13px;color:var(--ink2);margin-bottom:10px}
+  .alinks{display:flex;flex-wrap:wrap;gap:8px}
+  .alink{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:12px;
+    background:var(--accent-soft);color:var(--accent2);font-size:13px;font-weight:600;text-decoration:none}
+  .alink.call{background:#e6f7ef;color:var(--ok)}
+  .ainfo{font-size:12.5px;color:var(--ink2);margin-top:10px;line-height:1.5}
+  nav{
+    position:fixed;bottom:0;left:0;right:0;z-index:20;
+    background:rgba(255,255,255,.96);backdrop-filter:blur(10px);
+    border-top:1.5px solid var(--line);
+    padding:8px 0 calc(10px + env(safe-area-inset-bottom));
+  }
+  .navin{max-width:480px;margin:0 auto;display:flex}
+  .nbtn{flex:1;text-align:center;color:var(--ink2);font-size:11px;font-weight:600;cursor:pointer;user-select:none;background:none;border:none;font-family:inherit}
+  .nbtn .i{display:block;font-size:21px;margin-bottom:2px}
+  .nbtn.on{color:var(--accent)}
+  .overlay{position:fixed;inset:0;background:rgba(10,25,45,.45);z-index:30;opacity:0;pointer-events:none;transition:opacity .2s}
+  .overlay.show{opacity:1;pointer-events:auto}
+  .sheet{
+    position:fixed;left:0;right:0;bottom:0;z-index:31;max-width:480px;margin:0 auto;
+    background:var(--card);border-radius:24px 24px 0 0;box-shadow:0 -10px 40px rgba(18,38,63,.25);
+    padding:10px 22px calc(22px + env(safe-area-inset-bottom));
+    transform:translateY(105%);transition:transform .25s ease;max-height:82vh;overflow-y:auto;
+  }
+  .sheet.show{transform:translateY(0)}
+  .grip{width:42px;height:4.5px;border-radius:3px;background:var(--line);margin:4px auto 14px}
+  .sheet .stime{font-size:30px;font-weight:800}
+  .sheet .sdate{font-size:14px;color:var(--ink2);margin-top:2px}
+  .srow{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px;align-items:baseline}
+  .srow:last-of-type{border-bottom:none}
+  .srow .k{min-width:110px;color:var(--ink2);font-size:12.5px}
+  .srow .v{flex:1;font-weight:500;line-height:1.45}
+  .sbtns{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+  .sbtn{flex:1 1 45%;text-align:center;padding:13px 10px;border-radius:14px;font-size:14px;font-weight:700;
+    text-decoration:none;background:var(--accent);color:#fff}
+  .sbtn.sec{background:var(--accent-soft);color:var(--accent2)}
+  .swarn{margin-top:14px;font-size:12px;color:var(--ink2);line-height:1.5;text-align:center}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="logo">⛸️</div>
+      <div>
+        <h1>Каток Минск</h1>
+        <p>Расписание массовых катаний</p>
+      </div>
+    </div>
+    <div class="days" id="days"></div>
+  </header>
+
+  <div class="offline" id="offline">⚠️ Не удалось обновить расписание — показаны сохранённые данные.</div>
+
+  <div id="tab-schedule">
+    <div class="filters" id="fArenas"></div>
+    <div class="filters" id="fTypes" style="padding-top:6px"></div>
+    <main id="list"></main>
+  </div>
+
+  <div id="tab-arenas" class="hidden">
+    <main id="arenas"></main>
+  </div>
+
+  <div id="tab-info" class="hidden">
+    <main id="info"></main>
+  </div>
+
+  <nav>
+    <div class="navin">
+      <button class="nbtn on" id="nb-schedule" onclick="showTab('schedule')"><span class="i">🗓️</span>Расписание</button>
+      <button class="nbtn" id="nb-arenas" onclick="showTab('arenas')"><span class="i">🏟️</span>Арены</button>
+      <button class="nbtn" id="nb-info" onclick="showTab('info')"><span class="i">ℹ️</span>Инфо</button>
+    </div>
+  </nav>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet"></div>
+
+<script>
+const ARENAS = {
+  chizhovka: {
+    name: 'Чижовка-Арена',
+    short: 'Чижовка-Арена',
+    color: '#0f9d6c',
+    addr: 'Минск, ул. Ташкентская, 19',
+    phone: '+375293300749',
+    phoneView: '+375 (29) 33-00-749',
+    site: 'https://katki.chizhovka-arena.by/',
+    tickets: 'https://saleframe.24afisha.by/?oid=149&distributor_company_id=441&lang=ru',
+    prices: 'https://chizhovka-arena.by/czeny/katanie-na-konkah',
+    info: 'Сеанс — 1 час. Малая арена — вход №50, большая — вход №1. Касса — вход №59 (9:00–21:00). На сеанс не более 180 билетов.'
+  },
+  pritytskogo: {
+    name: 'Ледовый дворец (Притыцкого)',
+    short: 'Ледовый дворец',
+    color: '#e0507a',
+    addr: 'Минск, ул. Притыцкого, 27',
+    phone: '+375293232209',
+    phoneView: '+375 (29) 323-22-09',
+    site: 'https://led.by/mass_skating/',
+    tickets: 'https://led.by/tickets_online/',
+    prices: 'https://led.by/price/',
+    info: 'Билеты — в день сеанса в кассе (10:00–22:00). Сеанс 60 мин: взрослый 9 руб., детский 7 руб.; в выходные 10/8 руб. Прокат коньков — 5 руб.'
+  },
+  minskarena: {
+    name: 'Минск-Арена',
+    short: 'Минск-Арена',
+    color: '#e5484d',
+    addr: 'Минск, пр-т Победителей, 111',
+    phone: '+375172790700',
+    phoneView: '+375 (17) 279-07-00 (автоответчик)',
+    site: 'https://www.minskarena.by/page.html?slug=massovie-katania',
+    tickets: 'https://saleframe.minskarena.by/?oid=4',
+    prices: 'https://www.minskarena.by/page.html?slug=massovie-katania',
+    info: 'Катания на арене и конькобежном стадионе. Расписание публикуется на сайте арены на текущую неделю — уточняйте по автоответчику.'
+  },
+  karolinsky: {
+    name: 'СДЮШОР по фигурному катанию (Малиновка)',
+    short: 'СДЮШОР Малиновка',
+    color: '#00a3c4',
+    addr: 'Минск, Каролинский проезд, 5-4 (м. Петровщина)',
+    phone: '+375173966274',
+    phoneView: '+375 (17) 396-62-74 · автоответчик 396-62-81',
+    site: 'https://ledlife.by/',
+    tickets: 'https://ledlife.by/raspisanie/',
+    prices: 'https://ledlife.by/raspisanie/',
+    info: 'Массовые катания в будни с 17:00 до 23:00 и в выходные/праздники. Взрослый 6 руб., детский 4,5 руб. (дневные будни — 4/3 руб.), семейные и тематические сеансы, прокат коньков 4 руб.'
+  }
+};
+
+const TYPES = {
+  mass:  {label:'Массовое катание', badge:'Массовое', cls:'mass'},
+  disco: {label:'Диско-катание', badge:'Диско', cls:'disco'},
+  ohm:   {label:'Хоккейное мастерство', badge:'Хоккей', cls:'ohm'}
+};
+
+// Резервные данные на случай отсутствия сети (неделя 24–30.08.2026)
+const FALLBACK = {
+  generatedAt: '2026-08-25',
+  sessions: [
+    {d:'2026-08-24', t:'09:00', a:'chizhovka', type:'mass', dur:60, place:'Малая арена · вход №50'},
+    {d:'2026-08-24', t:'17:45', a:'chizhovka', type:'mass', dur:60, place:'Малая арена · вход №50'},
+    {d:'2026-08-24', t:'19:15', a:'chizhovka', type:'mass', dur:60, place:'Малая арена · вход №50'},
+    {d:'2026-08-25', t:'09:00', a:'chizhovka', type:'mass', dur:60, place:'Малая арена · вход №50'},
+    {d:'2026-08-25', t:'18:45', a:'chizhovka', type:'mass', dur:60, place:'Малая арена · вход №50'},
+    {d:'2026-08-26', t:'09:00', a:'chizhovka', type:'mass', dur:60, place:'Малая арена · вход №50'},
+    {d:'2026-08-26', t:'19:15', a:'chizhovka', type:'mass', dur:60, place:'Малая арена · вход №50'},
+    {d:'2026-08-27', t:'09:00', a:'chizhovka', type:'mass', dur:60, place:'Малая арена · вход №50'},
+    {d:'2026-08-27', t:'18:15', a:'chizhovka', type:'mass', dur:60, place:'Малая арена · вход №50'},
+    {d:'2026-08-29', t:'16:15', a:'chizhovka', type:'mass', dur:60, place:'Малая арена · вход №50'},
+    {d:'2026-08-29', t:'19:45', a:'chizhovka', type:'mass', dur:60, place:'Малая арена · вход №50'},
+    {d:'2026-08-30', t:'09:00', a:'chizhovka', type:'mass', dur:60, place:'Малая арена · вход №50'},
+    {d:'2026-08-30', t:'18:00', a:'chizhovka', type:'mass', dur:60, place:'Малая арена · вход №50'},
+    {d:'2026-08-24', t:'20:00', a:'pritytskogo', type:'mass', dur:60, price:'9 руб. / детский 7 руб.'},
+    {d:'2026-08-26', t:'20:15', a:'pritytskogo', type:'mass', dur:60, price:'9 руб. / детский 7 руб.'},
+    {d:'2026-08-28', t:'19:30', a:'pritytskogo', type:'mass', dur:60, price:'9 руб. / детский 7 руб.'},
+    {d:'2026-08-29', t:'17:45', a:'pritytskogo', type:'ohm',  dur:60},
+    {d:'2026-08-29', t:'19:00', a:'pritytskogo', type:'disco', dur:60, price:'10 руб. / детский 8 руб. (выходной)'},
+    {d:'2026-08-30', t:'14:45', a:'pritytskogo', type:'ohm',  dur:60},
+    {d:'2026-08-30', t:'19:00', a:'pritytskogo', type:'disco', dur:60, price:'10 руб. / детский 8 руб. (выходной)'}
+  ]
+};
+
+const DOW = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+const MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+
+let DATA = FALLBACK;
+let days = [];
+let selDay = null;
+let selArenas = new Set(Object.keys(ARENAS));
+let selTypes = new Set(Object.keys(TYPES));
+
+function dateObj(iso){const [y,m,dd]=iso.split('-').map(Number);return new Date(y,m-1,dd);}
+function iso(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function fmtLong(s){const dt=dateObj(s);return `${DOW[dt.getDay()]}, ${dt.getDate()} ${MONTHS[dt.getMonth()]}`;}
+function fmtUpd(s){const dt=dateObj(s.slice(0,10));return `${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}`;}
+function isPast(s){
+  const dt = dateObj(s.d); const [h,m]=s.t.split(':').map(Number);
+  dt.setHours(h,m+s.dur,0,0);
+  return dt < new Date();
+}
+
+function rebuildDays(){
+  const ds = [...new Set(DATA.sessions.map(s=>s.d))].sort();
+  days = [];
+  if(ds.length){
+    // все даты от минимальной до максимальной, даже дни без сеансов
+    let cur = dateObj(ds[0]); const end = dateObj(ds[ds.length-1]);
+    while(cur <= end){ days.push(iso(cur)); cur.setDate(cur.getDate()+1); }
+  }
+  const todayISO = iso(new Date());
+  selDay = days.includes(todayISO) ? todayISO : (days.find(d=>d>=todayISO) || days[days.length-1]);
+}
+
+function renderDays(){
+  const todayISO = iso(new Date());
+  document.getElementById('days').innerHTML = days.map(d=>{
+    const dt=dateObj(d);
+    const cls = ['day', d===selDay?'on':'', d===todayISO?'today':''].join(' ');
+    // точки: какие арены доступны в этот день (с учётом фильтра типов)
+    const ids = Object.keys(ARENAS).filter(id =>
+      DATA.sessions.some(s => s.d===d && s.a===id && selTypes.has(s.type)));
+    const dots = ids.map(id => `<i style="background:${ARENAS[id].color}"></i>`).join('');
+    return `<div class="${cls}" onclick="pickDay('${d}')">
+      <div class="dw">${DOW[dt.getDay()]}</div><div class="dn">${dt.getDate()}</div>
+      <div class="dots">${dots}</div></div>`;
+  }).join('');
+}
+function pickDay(d){selDay=d;renderDays();renderList();}
+
+function renderFilters(){
+  document.getElementById('fArenas').innerHTML =
+    `<span class="fgroup-label">Арены</span>` +
+    Object.entries(ARENAS).filter(([id])=>DATA.sessions.some(s=>s.a===id)).map(([id,a])=>{
+      const on = selArenas.has(id);
+      const style = on ? `style="background:${a.color};border-color:${a.color}"` : '';
+      const dot = `<span class="cdot" style="background:${on?'#fff':a.color}"></span>`;
+      return `<div class="chip ${on?'on':''}" ${style} onclick="tglArena('${id}')">${dot}${a.short}</div>`;
+    }).join('');
+  document.getElementById('fTypes').innerHTML =
+    `<span class="fgroup-label">Тип</span>` +
+    Object.entries(TYPES).map(([id,t])=>
+      `<div class="chip ${selTypes.has(id)?'on':''}" onclick="tglType('${id}')">${t.badge}</div>`).join('');
+}
+function tglArena(id){selArenas.has(id)?selArenas.delete(id):selArenas.add(id);renderFilters();renderList();}
+function tglType(id){selTypes.has(id)?selTypes.delete(id):selTypes.add(id);renderFilters();renderDays();renderList();}
+
+function renderList(){
+  const el = document.getElementById('list');
+  if(!days.length){el.innerHTML='<div class="empty"><div class="ico">🧊</div>Нет данных расписания.</div>';return;}
+  const items = DATA.sessions
+    .filter(s=>s.d===selDay && selArenas.has(s.a) && selTypes.has(s.type))
+    .sort((x,y)=>x.t.localeCompare(y.t));
+  let html = `<div class="datehead">${fmtLong(selDay)}</div>`;
+  if(!items.length){
+    html += `<div class="empty"><div class="ico">🧊</div>В этот день сеансов нет<br>или они скрыты фильтрами.</div>`;
+  } else {
+    html += items.map((s)=>{
+      const a=ARENAS[s.a], t=TYPES[s.type], past=isPast(s);
+      const idx = DATA.sessions.indexOf(s);
+      return `<div class="card ${past?'past':''}" style="border-left-color:${a.color}" onclick="openSheet(${idx})">
+        <div class="t"><div class="hh">${s.t}</div><div class="dur">${s.dur} мин</div></div>
+        <div class="info">
+          <div class="arena" style="color:${past?'var(--past)':a.color}">${a.short}</div>
+          <div class="sub">${s.place||a.addr}</div>
+        </div>
+        <div class="badge ${past?'done':t.cls}">${past?'Завершён':t.badge}</div>
+      </div>`;
+    }).join('');
+  }
+  html += `<div class="note">⚠️ В расписании возможны изменения — арены корректируют сеансы в течение недели. Перед выездом сверяйтесь с сайтом арены или уточняйте по телефону.</div>`;
+  html += `<div class="updated">Данные с официальных сайтов арен · обновлено ${fmtUpd(DATA.generatedAt)}</div>`;
+  el.innerHTML = html;
+}
+
+function renderArenas(){
+  document.getElementById('arenas').innerHTML = Object.entries(ARENAS).map(([id,a])=>`
+    <div class="acard" style="border-left:5px solid ${a.color}">
+      <h3><span class="cdot" style="background:${a.color};display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px"></span>${a.name}</h3>
+      <div class="addr">📍 ${a.addr}</div>
+      <div class="alinks">
+        <a class="alink" href="${a.site}" target="_blank" rel="noopener">🌐 Сайт</a>
+        <a class="alink" href="${a.tickets}" target="_blank" rel="noopener">🎟️ Билеты</a>
+        <a class="alink" href="${a.prices}" target="_blank" rel="noopener">💳 Цены</a>
+        <a class="alink call" href="tel:${a.phone}">📞 Позвонить</a>
+      </div>
+      <div class="ainfo">${a.info}</div>
+    </div>`).join('') +
+    `<div class="updated">«Каток Минск» — неофициальное расписание катаний · обновлено ${fmtUpd(DATA.generatedAt)}</div>`;
+}
+
+function renderInfo(){
+  document.getElementById('info').innerHTML = `
+    <div class="acard">
+      <h3>О приложении</h3>
+      <div class="ainfo" style="margin-top:6px">
+        «Каток Минск» — неофициальный агрегатор расписаний массовых катаний на ледовых аренах Минска.
+        Приложение не связано с администрациями арен, не продаёт билеты и не собирает персональные данные.
+        Кнопки «Билеты» ведут на официальные сервисы продажи самих арен.
+      </div>
+    </div>
+    <div class="acard">
+      <h3>Источники данных</h3>
+      <div class="ainfo" style="margin-top:6px">
+        Расписание автоматически собирается один раз в день из открытых официальных источников:
+      </div>
+      <div class="alinks" style="margin-top:10px;flex-direction:column;align-items:flex-start">
+        <a class="alink" href="https://chizhovka-arena.by/fizkultura-i-sport/katanie-na-konkah" target="_blank" rel="noopener">chizhovka-arena.by — Чижовка-Арена</a>
+        <a class="alink" href="https://led.by/category/timetable/" target="_blank" rel="noopener">led.by — Ледовый дворец (Притыцкого)</a>
+        <a class="alink" href="https://www.minskarena.by/" target="_blank" rel="noopener">minskarena.by — Минск-Арена</a>
+        <a class="alink" href="https://ledlife.by/" target="_blank" rel="noopener">ledlife.by — СДЮШОР (Малиновка)</a>
+      </div>
+      <div class="ainfo">
+        Используются только фактические сведения: даты, время, длительность и тип сеансов, публично объявленные цены.
+        Тексты, фотографии и логотипы арен не копируются. Названия арен упоминаются исключительно для указания
+        места проведения сеансов и принадлежат их владельцам.
+      </div>
+    </div>
+    <div class="acard">
+      <h3>Точность данных</h3>
+      <div class="ainfo" style="margin-top:6px">
+        Арены могут менять расписание в течение дня. Приложение — справочный инструмент:
+        перед выездом сверяйтесь с сайтом арены или уточняйте по телефону.
+        Актуальность данных: ${fmtUpd(DATA.generatedAt)}.
+      </div>
+    </div>
+    <div class="acard">
+      <h3>Правовая информация</h3>
+      <div class="alinks" style="margin-top:4px">
+        <a class="alink" href="privacy.html" target="_blank" rel="noopener">Политика конфиденциальности</a>
+        <a class="alink" href="mailto:panasiukvadz@gmail.com">Связаться с автором</a>
+      </div>
+      <div class="ainfo">
+        Если вы представитель арены и хотите скорректировать или исключить данные —
+        напишите, изменения внесём оперативно.
+      </div>
+    </div>`;
+}
+
+function showTab(t){
+  for(const k of ['schedule','arenas','info']){
+    document.getElementById('tab-'+k).classList.toggle('hidden', t!==k);
+    document.getElementById('nb-'+k).classList.toggle('on', t===k);
+  }
+  window.scrollTo({top:0});
+}
+
+function openSheet(idx){
+  const s = DATA.sessions[idx], a = ARENAS[s.a], t = TYPES[s.type];
+  const past = isPast(s);
+  const endT = (()=>{const [h,m]=s.t.split(':').map(Number);
+    const e=new Date(2000,0,1,h,m+s.dur);
+    return `${String(e.getHours()).padStart(2,'0')}:${String(e.getMinutes()).padStart(2,'0')}`;})();
+  document.getElementById('sheet').innerHTML = `
+    <div class="grip"></div>
+    <div class="stime">${s.t} – ${endT}</div>
+    <div class="sdate">${fmtLong(s.d)}${past?' · сеанс завершён':''}</div>
+    <div style="margin-top:14px">
+      <div class="srow"><div class="k">Арена</div><div class="v" style="color:${a.color};font-weight:700">${a.name}</div></div>
+      <div class="srow"><div class="k">Адрес</div><div class="v">${a.addr}</div></div>
+      ${s.place?`<div class="srow"><div class="k">Площадка</div><div class="v">${s.place}</div></div>`:''}
+      <div class="srow"><div class="k">Тип</div><div class="v"><span class="badge ${t.cls}">${t.label}</span></div></div>
+      <div class="srow"><div class="k">Длительность</div><div class="v">${s.dur} минут</div></div>
+      ${s.price?`<div class="srow"><div class="k">Цена</div><div class="v">${s.price}</div></div>`:''}
+      <div class="srow"><div class="k">Телефон</div><div class="v">${a.phoneView}</div></div>
+    </div>
+    <div class="sbtns">
+      <a class="sbtn" href="${a.tickets}" target="_blank" rel="noopener">🎟️ Купить билет</a>
+      <a class="sbtn sec" href="${a.site}" target="_blank" rel="noopener">🌐 Сайт арены</a>
+    </div>
+    <div class="swarn">Расписание может измениться — перед выездом уточните на сайте арены или по телефону.</div>`;
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('sheet').classList.add('show');
+}
+function closeSheet(){
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('sheet').classList.remove('show');
+}
+
+function renderAll(){rebuildDays();renderDays();renderFilters();renderList();renderArenas();renderInfo();}
+
+// старт: рисуем из резервных данных, затем тянем свежие
+renderAll();
+fetch('./schedule.json', {cache:'no-cache'})
+  .then(r=>{if(!r.ok) throw 0; return r.json();})
+  .then(j=>{
+    if(j && Array.isArray(j.sessions) && j.sessions.length){
+      DATA = j;
+      try{localStorage.setItem('schedule', JSON.stringify(j));}catch(e){}
+      renderAll();
+    }
+  })
+  .catch(()=>{
+    try{
+      const c = localStorage.getItem('schedule');
+      if(c){DATA = JSON.parse(c); renderAll();}
+    }catch(e){}
+    document.getElementById('offline').style.display='block';
+  });
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
