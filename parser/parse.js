@@ -145,7 +145,7 @@ async function withBrowser(fn) {
   const { chromium } = require('playwright');
   const u = process.env.BY_PROXY_URL; let proxy; if (u) { try { const p = new URL(u); proxy = { server: p.protocol + '//' + p.host }; if (p.username) proxy.username = decodeURIComponent(p.username); if (p.password) proxy.password = decodeURIComponent(p.password); } catch (e) { proxy = { server: u }; } console.log('Playwright: proxy ' + proxy.server); } const browser = await chromium.launch({ proxy });
   try {
-    const page = await browser.newPage({ locale: 'ru-RU' });
+    const page = await browser.newPage({ locale: 'ru-RU', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36' });
     return await fn(page);
   } finally {
     await browser.close();
