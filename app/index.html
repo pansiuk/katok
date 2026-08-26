@@ -215,7 +215,7 @@ const ARENAS = {
     site: 'https://ledlife.by/',
     tickets: 'https://ledlife.by/raspisanie/',
     prices: 'https://ledlife.by/raspisanie/',
-    info: 'Массовые катания в будни с 17:00 до 23:00 и в выходные/праздники. Взрослый 6 руб., детский 4,5 руб. (дневные будни — 4/3 руб.), семейные и тематические сеансы, прокат коньков 4 руб.'
+    info: 'Массовые катания в будни с 17:00 до 23:00 и в выходные/праздники. Взрослый 6 руб., детский 4,5 руб. (дневные будни — 4/3 руб.), семейные и тематические сеансы, прокат коньков 4 руб. Сайт школы бывает недоступен — актуальное расписание по автоответчику +375 (17) 396-62-81.'
   }
 };
 
@@ -339,9 +339,45 @@ function renderList(){
       </div>`;
     }).join('');
   }
+  // СДЮШОР: точное расписание школа публикует только на автоответчике,
+  // сайт часто недоступен — показываем справочную карточку, пока нет реальных сеансов
+  const hasKar = DATA.sessions.some(s=>s.d===selDay && s.a==='karolinsky');
+  if(!hasKar && selTypes.has('mass')){
+    const kar = ARENAS.karolinsky;
+    const dow = dateObj(selDay).getDay();
+    const wd = dow >= 1 && dow <= 5;
+    html += `<div class="card" style="border-left-color:${kar.color};opacity:.92" onclick="openArenaSheet('karolinsky')">
+      <div class="t"><div class="hh" style="font-size:17px">${wd?'17:00+':'—'}</div><div class="dur">${wd?'вечер':'вых.'}</div></div>
+      <div class="info">
+        <div class="arena" style="color:${kar.color}">${kar.short}</div>
+        <div class="sub">${wd?'Катания обычно с 17:00 до 23:00 — время сеансов по автоответчику':'Время сеансов уточняйте по автоответчику'}</div>
+      </div>
+      <div class="badge" style="background:#e6f4f8;color:${kar.color}">Уточнить</div>
+    </div>`;
+  }
   html += `<div class="note">⚠️ В расписании возможны изменения — арены корректируют сеансы в течение недели. Перед выездом сверяйтесь с сайтом арены или уточняйте по телефону.</div>`;
   html += `<div class="updated">Данные с официальных сайтов арен · обновлено ${fmtUpd(DATA.generatedAt)}</div>`;
   el.innerHTML = html;
+}
+
+function openArenaSheet(id){
+  const a = ARENAS[id];
+  document.getElementById('sheet').innerHTML = `
+    <div class="grip"></div>
+    <div class="stime" style="font-size:21px;color:${a.color}">${a.name}</div>
+    <div class="sdate">${fmtLong(selDay)}</div>
+    <div style="margin-top:14px">
+      <div class="srow"><div class="k">Адрес</div><div class="v">${a.addr}</div></div>
+      <div class="srow"><div class="k">Режим</div><div class="v">${a.info}</div></div>
+      <div class="srow"><div class="k">Телефон</div><div class="v">${a.phoneView}</div></div>
+    </div>
+    <div class="sbtns">
+      <a class="sbtn" href="tel:${a.phone}">📞 Позвонить</a>
+      <a class="sbtn sec" href="${a.site}" target="_blank" rel="noopener">🌐 Сайт арены</a>
+    </div>
+    <div class="swarn">Точное время сеансов на сегодня школа сообщает по автоответчику. Как только расписание появится на сайте школы, оно будет показано здесь автоматически.</div>`;
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('sheet').classList.add('show');
 }
 
 function renderArenas(){
