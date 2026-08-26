@@ -26,6 +26,8 @@ jobs:
 
       - name: Parse schedule
         working-directory: parser
+        env:
+          BY_PROXY_URL: ${{ secrets.BY_PROXY_URL }}
         run: node parse.js
 
       - name: Commit schedule.json
